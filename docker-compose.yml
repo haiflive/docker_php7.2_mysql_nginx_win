@@ -1,0 +1,83 @@
+# Версия docker-compose
+version: '2'
+# Список наших сервисов (контейнеров)
+services:
+    # nginx для проксирования всех хостов
+    nginx:
+        build: ./images/nginx
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./images/nginx/hosts:/etc/nginx/conf.d
+            - ../home/test1.ru:/var/www
+            - ./logs:/var/log/nginx
+            # - ./images/nginx/certs:/etc/nginx/certificates/certs/
+        links:
+            - "db:docker_db"
+            - "redis:docker_redis"
+    # контейнер для обработки php-7
+    php:
+        build: ./images/php
+        # links:
+            # - "db:docker_mysql_db"
+        volumes:
+            - ../home/test1.ru:/var/www
+        network_mode: "service:nginx"
+    # база данных с общей статистикой
+    db:
+        # https://github.com/laradock/laradock/issues/1392
+        # mysql:5.5 mysql:5.6 mysql:5.7 mysql:8.0 percona:5.5 percona:5.6
+        image: mysql:8.0
+        command: --default-authentication-plugin=mysql_native_password --innodb_use_native_aio=0 --max_allowed_packet=32505856 # Set max_allowed_packet to 256M (or any other value)
+        restart: always
+        # network_mode: "host"
+        ports:
+            - "3306:3306"
+        volumes:
+            - ./mysql:/var/lib/mysql
+            - ../home/test1.ru:/var/www
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_ROOT_HOST: "%"
+            MYSQL_USER: admin
+            MYSQL_PASSWORD: admin
+    dbpostgre:
+        image: postgres
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: root
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+            - ../home/test1.ru:/var/www
+    adminer:
+        image: adminer
+        container_name: adminer
+        restart: always
+        links:
+            - "db:docker_mysql_db"
+        ports:
+            - 8484:8080
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin
+        restart: always
+        volumes:
+            - ./sessions:/sessions
+            - ./phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+        links:
+            - "db:docker_mysql_db"
+        ports:
+            - 8383:80
+        environment:
+            PMA_ARBITRARY: 1
+            MYSQL_ROOT_PASSWORD: root
+    redis:
+        image: redis:3.2-alpine
+        volumes:
+            - redis_data:/data
+        # network_mode: "service:nginx"
+volumes:
+    pgdata:
+        driver: local
+    redis_data:

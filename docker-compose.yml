@@ -24,6 +24,8 @@ services:
         volumes:
             - ../home/test1.ru:/var/www
         network_mode: "service:nginx"
+        environment:
+            XDEBUG_CONFIG: remote_host=host.docker.internal remote_port=9000 remote_enable=1
     # база данных с общей статистикой
     db:
         # https://github.com/laradock/laradock/issues/1392

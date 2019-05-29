@@ -1,3 +1,4 @@
 mysql/
 logs/
 sessions/
+nginx_cache_store/

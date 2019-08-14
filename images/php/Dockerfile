@@ -58,6 +58,15 @@ RUN docker-php-ext-install soap
 RUN pecl install xdebug-2.6.1 \
 	pecl install redis \
     && docker-php-ext-enable redis xdebug
+
+## Install imagick
+RUN export CFLAGS="$PHP_CFLAGS" CPPFLAGS="$PHP_CPPFLAGS" LDFLAGS="$PHP_LDFLAGS" \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libmagickwand-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && pecl install imagick-3.4.3 \
+    && docker-php-ext-enable imagick
     
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 

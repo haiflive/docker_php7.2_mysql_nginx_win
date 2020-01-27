@@ -53,6 +53,7 @@ RUN docker-php-ext-configure intl
 RUN docker-php-ext-install intl
 RUN docker-php-ext-install xsl
 RUN docker-php-ext-install soap
+RUN docker-php-ext-install exif
 
 ## Install Redis and Xdebug
 RUN pecl install xdebug-2.6.1 \

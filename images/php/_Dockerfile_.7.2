@@ -18,30 +18,29 @@ RUN apt-get install -y \
         libxml2-dev
 
 # RUN apt-get install -y memcached php-memcached
-# RUN apt-get install -y memcached
+RUN apt-get install -y memcached
 RUN apt-get install -y redis-tools
-RUN apt-get install -y zlib1g-dev libicu-dev libzip-dev
-# RUN apt-get install -y libmemcached-dev zlib1g-dev libicu-dev
-# RUN git clone -b php7 https://github.com/php-memcached-dev/php-memcached /usr/src/php/ext/memcached \
-#     && docker-php-ext-configure /usr/src/php/ext/memcached \
-#         --disable-memcached-sasl \
-#     && docker-php-ext-install /usr/src/php/ext/memcached \
-#     && rm -rf /usr/src/php/ext/memcached \
-# 	&& docker-php-ext-enable memcached
+RUN apt-get install -y libmemcached-dev zlib1g-dev libicu-dev
+RUN git clone -b php7 https://github.com/php-memcached-dev/php-memcached /usr/src/php/ext/memcached \
+    && docker-php-ext-configure /usr/src/php/ext/memcached \
+        --disable-memcached-sasl \
+    && docker-php-ext-install /usr/src/php/ext/memcached \
+    && rm -rf /usr/src/php/ext/memcached \
+	&& docker-php-ext-enable memcached
 
 # Install memcache extension
-# RUN set -x \
-#     && apt-get install -y --no-install-recommends unzip \
-#     && cd /tmp \
-#     && curl -sSL -o php7.zip https://github.com/websupport-sk/pecl-memcache/archive/php7.zip \
-#     && unzip php7 \
-#     && cd pecl-memcache-php7 \
-#     && /usr/local/bin/phpize \
-#     && ./configure --with-php-config=/usr/local/bin/php-config \
-#     && make \
-#     && make install \
-#     && echo "extension=memcache.so" > /usr/local/etc/php/conf.d/ext-memcache.ini \
-#     && rm -rf /tmp/pecl-memcache-php7 php7.zip
+RUN set -x \
+    && apt-get install -y --no-install-recommends unzip \
+    && cd /tmp \
+    && curl -sSL -o php7.zip https://github.com/websupport-sk/pecl-memcache/archive/php7.zip \
+    && unzip php7 \
+    && cd pecl-memcache-php7 \
+    && /usr/local/bin/phpize \
+    && ./configure --with-php-config=/usr/local/bin/php-config \
+    && make \
+    && make install \
+    && echo "extension=memcache.so" > /usr/local/etc/php/conf.d/ext-memcache.ini \
+    && rm -rf /tmp/pecl-memcache-php7 php7.zip
 
 RUN docker-php-ext-install -j$(nproc) iconv mbstring mysqli pdo_mysql zip
 RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
@@ -58,7 +57,7 @@ RUN docker-php-ext-install soap
 RUN docker-php-ext-install exif
 
 ## Install Redis and Xdebug
-RUN pecl install xdebug \
+RUN pecl install xdebug-2.6.1 \
 	pecl install redis \
     && docker-php-ext-enable redis xdebug
 
@@ -68,7 +67,7 @@ RUN export CFLAGS="$PHP_CFLAGS" CPPFLAGS="$PHP_CPPFLAGS" LDFLAGS="$PHP_LDFLAGS" 
     && apt-get install -y --no-install-recommends \
         libmagickwand-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && pecl install imagick \
+    && pecl install imagick-3.4.3 \
     && docker-php-ext-enable imagick
     
 ## install mondodb php extensions

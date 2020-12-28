@@ -8,24 +8,26 @@ services:
         ports:
             - "80:80"
             - "443:443"
+            - "27077:27017"
         volumes:
-            - ./images/nginx/nginx.conf:/etc/nginx/nginx.conf
-            - ./images/nginx/map_vars.conf:/etc/nginx/map_vars.conf
-            - ./images/nginx/hosts:/etc/nginx/conf.d
-            - ../home/test1.ru:/var/www
+            - ./images/nginx/nginx.conf:/etc/nginx/nginx.conf:cached
+            - ./images/nginx/map_vars.conf:/etc/nginx/map_vars.conf:cached
+            - ./images/nginx/hosts:/etc/nginx/conf.d:cached
+            - ../home/test1.ru:/var/www:delegated
             - ./logs:/var/log/nginx
             - ./nginx_cache_store:/var/tmp/nginx/store
             # - ./images/nginx/certs:/etc/nginx/certificates/certs/
         links:
             - "db:docker_db"
             - "redis:docker_redis"
+            # - "mongodb:docker_mongodb"
     # контейнер для обработки php-7
     php:
         build: ./images/php
         # links:
             # - "db:docker_mysql_db"
         volumes:
-            - ../home/test1.ru:/var/www
+            - ../home/test1.ru:/var/www:delegated
         network_mode: "service:nginx"
         environment:
             XDEBUG_CONFIG: remote_host=host.docker.internal remote_port=9000 remote_enable=1
@@ -84,7 +86,24 @@ services:
         # network_mode: "service:nginx"
         ports:
             - 6379:6379
+    mongodb:
+        image: mongo:latest
+        # environment:
+            # MONGO_INITDB_ROOT_USERNAME: root
+            # MONGO_INITDB_ROOT_PASSWORD: root
+        # ports:
+            # - 27017:27017
+        network_mode: "service:nginx"
+        volumes:
+            - mongodb_data_container:/data/db
+            - ../home/test1.ru:/var/www
+    mailer:
+        image: schickling/mailcatcher
+        ports: 
+            - 1025:1025
+            - 1080:1080
 volumes:
     pgdata:
         driver: local
     redis_data:
+    mongodb_data_container:
